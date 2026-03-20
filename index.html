@@ -79,10 +79,13 @@ pool: {
         '.markdown-section pre{border-radius:6px;}';
       document.head.appendChild(style);
 
+      var basePath = window.location.pathname.replace(/[^/]*$/, '');
+
       window.$docsify = {
         name: '📚 我的知识库',
         repo: '',
         el: '#app',
+        basePath: basePath,
         loadSidebar: true,
         loadNavbar: true,
         subMaxLevel: 3,
@@ -94,6 +97,11 @@ pool: {
           noData: '没有找到相关内容',
           depth: 6,
         },
+        pagination: {
+          previousText: '上一篇',
+          nextText: '下一篇',
+          crossChapter: true,
+        },
         copyCode: {
           buttonText: '复制',
           errorText: '失败',
@@ -101,25 +109,48 @@ pool: {
         },
       };
 
-      var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js';
-      s.onload = function () {
-        [
-          'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js',
-          'https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js',
-          'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js',
-          'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js',
-          'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js',
-          'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
-          'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js',
-          'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js',
-        ].forEach(function (src) {
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
           var sc = document.createElement('script');
           sc.src = src;
+          sc.async = false;
+          sc.onload = resolve;
+          sc.onerror = reject;
           document.body.appendChild(sc);
         });
-      };
-      document.body.appendChild(s);
+      }
+
+      var preDocsifyScripts = [
+        'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js',
+        'https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js',
+        'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js',
+        'https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js',
+      ];
+
+      var postDocsifyScripts = [
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js',
+      ];
+
+      preDocsifyScripts
+        .reduce(function (p, src) {
+          return p.then(function () {
+            return loadScript(src);
+          });
+        }, Promise.resolve())
+        .then(function () {
+          return loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js');
+        })
+        .then(function () {
+          return postDocsifyScripts.reduce(function (p, src) {
+            return p.then(function () {
+              return loadScript(src);
+            });
+          }, Promise.resolve());
+        });
     }
 
     // 点击句号触发，设置标记并刷新页面，让 docsify 从头初始化
