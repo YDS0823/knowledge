@@ -2,75 +2,146 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>我的知识库</title>
-  <meta name="description" content="个人知识积累">
+  <title>Bug记录 - 请求超时问题排查</title>
+  <meta name="description" content="记录一次线上请求超时问题的排查过程">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
   <style>
-    :root {
-      --theme-color: #4a90e2;
-      --sidebar-width: 260px;
-      --content-max-width: 900px;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 760px;
+      margin: 60px auto;
+      padding: 0 20px;
+      color: #333;
+      line-height: 1.8;
     }
-    /* 图片自适应宽度 */
-    .markdown-section img {
-      max-width: 100%;
+    h1 { font-size: 1.6em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    h2 { font-size: 1.2em; margin-top: 32px; }
+    pre {
+      background: #f6f8fa;
+      padding: 14px;
       border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      overflow-x: auto;
+      font-size: 0.9em;
     }
-    /* 代码块优化 */
-    .markdown-section pre {
-      border-radius: 6px;
+    code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+    .meta { color: #888; font-size: 0.9em; margin-bottom: 24px; }
+    .dot {
+      cursor: pointer;
+      user-select: none;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <div id="app">加载中...</div>
+  <!-- 伪装页面：普通 bug 记录 -->
+  <div id="decoy">
+    <h1>线上请求超时问题排查记录</h1>
+    <p class="meta">2024-03-15 · 后端服务 · Node.js</p>
+
+    <h2>问题描述</h2>
+    <p>
+      生产环境偶发请求超时，错误日志显示 <code>ETIMEDOUT</code>，
+      平均每小时出现 3~5 次，集中在业务高峰期。
+    </p>
+
+    <h2>排查过程</h2>
+    <p>首先查看 Nginx 访问日志，确认超时请求的特征：</p>
+    <pre>grep 'upstream timed out' /var/log/nginx/error.log | tail -20</pre>
+    <p>发现超时均指向同一个下游服务，怀疑是连接池耗尽。检查连接池配置：</p>
+    <pre>// config.js
+pool: {
+  max: 10,       // 最大连接数
+  min: 2,
+  acquire: 3000, // 获取连接超时时间(ms)
+  idle: 10000
+}</pre>
+    <p>
+      高峰期并发量约 80 QPS，而连接池上限仅为 10，
+      导致请求在等待连接时超过 <code>acquire</code> 阈值而报错。
+    </p>
+
+    <h2>解决方案</h2>
+    <p>将连接池 <code>max</code> 调整为 50，同时增加重试逻辑，上线后超时问题消失<span class="dot" id="entry">。</span>
+    </p>
+
+    <h2>后续优化</h2>
+    <p>
+      考虑引入熔断机制，避免下游异常时连接池被打满，
+      同时对慢查询 SQL 做索引优化以降低单次请求耗时。
+    </p>
+  </div>
+
+  <!-- 真实的 Docsify 知识库容器，初始隐藏 -->
+  <div id="app" style="display:none"></div>
 
   <script>
-    window.$docsify = {
-      name: '📚 我的知识库',
-      repo: '',
-      loadSidebar: true,
-      loadNavbar: true,
-      subMaxLevel: 3,
-      auto2top: true,
-      search: {
-        maxAge: 86400000,
-        paths: 'auto',
-        placeholder: '搜索知识点...',
-        noData: '没有找到相关内容',
-        depth: 6,
-      },
-      pagination: {
-        previousText: '上一篇',
-        nextText: '下一篇',
-        crossChapter: true,
-      },
-      copyCode: {
-        buttonText: '复制',
-        errorText: '失败',
-        successText: '已复制'
-      },
-      plugins: [],
-    }
-  </script>
+    // 点击句号进入真实知识库
+    document.getElementById('entry').addEventListener('click', function () {
+      document.getElementById('decoy').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
 
-  <!-- Docsify 核心 -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-  <!-- 搜索插件 -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
-  <!-- 代码复制插件 -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
-  <!-- 图片缩放插件 -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
-  <!-- 代码高亮 -->
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
-  <!-- 分页插件 -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+      // 动态加载 Docsify 样式
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css';
+      document.head.appendChild(link);
+
+      // 追加全局样式
+      var style = document.createElement('style');
+      style.textContent = [
+        ':root{--theme-color:#4a90e2;--sidebar-width:260px;--content-max-width:900px;}',
+        '.markdown-section img{max-width:100%;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);}',
+        '.markdown-section pre{border-radius:6px;}'
+      ].join('');
+      document.head.appendChild(style);
+
+      // 初始化 Docsify
+      window.$docsify = {
+        name: '📚 我的知识库',
+        repo: '',
+        loadSidebar: true,
+        loadNavbar: true,
+        subMaxLevel: 3,
+        auto2top: true,
+        search: {
+          maxAge: 86400000,
+          paths: 'auto',
+          placeholder: '搜索知识点...',
+          noData: '没有找到相关内容',
+          depth: 6,
+        },
+        pagination: {
+          previousText: '上一篇',
+          nextText: '下一篇',
+          crossChapter: true,
+        },
+        copyCode: {
+          buttonText: '复制',
+          errorText: '失败',
+          successText: '已复制'
+        },
+      };
+
+      function loadScript(src, onload) {
+        var s = document.createElement('script');
+        s.src = src;
+        if (onload) s.onload = onload;
+        document.body.appendChild(s);
+      }
+
+      // 按顺序加载 Docsify 及插件
+      loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js', function () {
+        loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js');
+        loadScript('https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js');
+      });
+    });
+  </script>
 </body>
 </html>
