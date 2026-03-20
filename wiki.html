@@ -33,6 +33,13 @@
       loadNavbar: '_navbar.md',
       subMaxLevel: 3,
       auto2top: true,
+      plugins: [
+        function (hook) {
+          hook.beforeEach(function (content) {
+            return content.replace(/^---[ \t]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[ \t]*\r?\n/, '');
+          });
+        }
+      ],
       search: {
         maxAge: 86400000,
         paths: 'auto',
