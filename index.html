@@ -73,6 +73,11 @@ pool: {
       link.href = 'https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css';
       document.head.appendChild(link);
 
+      var katexLink = document.createElement('link');
+      katexLink.rel = 'stylesheet';
+      katexLink.href = 'https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css';
+      document.head.appendChild(katexLink);
+
       var style = document.createElement('style');
       style.textContent = ':root{--theme-color:#4a90e2;--sidebar-width:260px;--content-max-width:900px;}' +
         '.markdown-section img{max-width:100%;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);}' +
@@ -140,6 +145,9 @@ pool: {
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js',
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js',
+        'https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js',
+        'https://cdn.jsdelivr.net/npm/marked@4',
+        'https://cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js',
       ];
 
       preDocsifyScripts
