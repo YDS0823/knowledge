@@ -1,0 +1,11 @@
+[build]
+  publish = "."
+
+# 开启基础密码保护（Basic Auth）
+# 注意：部署到 Netlify 后，需要在 Netlify 控制台 Site Settings > Access control > Basic password protection 中设置密码
+# 下面的配置确保所有页面都受到保护
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
