@@ -75,73 +75,9 @@ pool: {
   <div id="app" style="display:none"></div>
 
   <script>
-    // 点击句号进入真实知识库
+    // 点击句号跳转到真实知识库页面
     document.getElementById('entry').addEventListener('click', function () {
-      document.getElementById('decoy').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-
-      // 动态加载 Docsify 样式
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css';
-      document.head.appendChild(link);
-
-      // 追加全局样式
-      var style = document.createElement('style');
-      style.textContent = [
-        ':root{--theme-color:#4a90e2;--sidebar-width:260px;--content-max-width:900px;}',
-        '.markdown-section img{max-width:100%;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);}',
-        '.markdown-section pre{border-radius:6px;}'
-      ].join('');
-      document.head.appendChild(style);
-
-      // 初始化 Docsify
-      window.$docsify = {
-        name: '📚 我的知识库',
-        repo: '',
-        basePath: '/knowledge/',
-        loadSidebar: true,
-        loadNavbar: true,
-        subMaxLevel: 3,
-        auto2top: true,
-        search: {
-          maxAge: 86400000,
-          paths: 'auto',
-          placeholder: '搜索知识点...',
-          noData: '没有找到相关内容',
-          depth: 6,
-        },
-        pagination: {
-          previousText: '上一篇',
-          nextText: '下一篇',
-          crossChapter: true,
-        },
-        copyCode: {
-          buttonText: '复制',
-          errorText: '失败',
-          successText: '已复制'
-        },
-      };
-
-      function loadScript(src, onload) {
-        var s = document.createElement('script');
-        s.src = src;
-        if (onload) s.onload = onload;
-        document.body.appendChild(s);
-      }
-
-      // 按顺序加载 Docsify 及插件
-      loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js', function () {
-        loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js');
-        loadScript('https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js');
-      });
+      window.location.href = 'wiki.html';
     });
   </script>
 </body>
