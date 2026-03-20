@@ -28,6 +28,8 @@ def hello(name):
 
 ## 图片
 
+暂时不知道怎么方便的存储图片
+
 将图片放到 `docs/images/` 目录，用以下方式引用（点击可放大）：
 
 ```markdown
