@@ -74,13 +74,14 @@ pool: {
       link.rel = 'stylesheet';
       link.href = 'https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css';
       link.title = 'vue';
+      link.disabled = true;
       document.head.appendChild(link);
 
       var darkLink = document.createElement('link');
       darkLink.rel = 'stylesheet';
       darkLink.href = 'https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css';
       darkLink.title = 'dark';
-      darkLink.disabled = true;
+      darkLink.disabled = false;
       document.head.appendChild(darkLink);
 
       var katexLink = document.createElement('link');
@@ -106,6 +107,16 @@ pool: {
         loadNavbar: '_navbar.md',
         subMaxLevel: 3,
         auto2top: true,
+        markdown: {
+          renderer: {
+            code: function(code, lang) {
+              if (lang === 'tex' || lang === 'latex' || lang === 'math') {
+                return '<span class="katex-display">' + katex.renderToString(code, {throwOnError: false, displayMode: true}) + '</span>';
+              }
+              return this.origin.code.apply(this, arguments);
+            }
+          }
+        },
         plugins: [
           function (hook) {
             hook.beforeEach(function (content) {
@@ -148,6 +159,7 @@ pool: {
         'https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js',
         'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js',
         'https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js',
+        'https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js',
         'https://cdn.jsdelivr.net/npm/marked@4',
       ];
 
@@ -157,7 +169,6 @@ pool: {
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js',
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js',
-        'https://cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js',
         'https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js',
       ];
 
@@ -191,13 +202,13 @@ pool: {
     }
 
     // 极简主题切换逻辑
-    var isDark = false;
+    var isDark = true;
     var darkLink = document.querySelector('link[title="dark"]');
+    var lightLink = document.querySelector('link[title="vue"]');
     document.getElementById('theme-btn').addEventListener('click', function() {
       isDark = !isDark;
-      if (darkLink) {
-        darkLink.disabled = !isDark;
-      }
+      if (darkLink) darkLink.disabled = !isDark;
+      if (lightLink) lightLink.disabled = isDark;
     });
   </script>
 </body>
